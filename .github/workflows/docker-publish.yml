@@ -20,6 +20,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write  # Required for attestation
+      attestations: write  # Required for attestation
 
     steps:
       - name: Checkout repository
@@ -51,6 +53,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -63,6 +66,7 @@ jobs:
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
