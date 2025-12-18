@@ -694,7 +694,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
-Anatolii petrovskyi (@aka-toxa)
+[Anatolii Petrovskyi](https://anatolii.iusevimbtw.com)
 
 ## Credits
 
