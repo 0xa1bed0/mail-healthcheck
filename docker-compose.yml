@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  mail-healthcheck:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # Server
+      PORT: 3000
+      LOG_LEVEL: info
+      
+      # Timing (all values in milliseconds)
+      LOGIN_INTERVAL: 60000              # 1 minute
+      LOGIN_STALE_INTERVAL: 300000       # 5 minutes
+      ROUND_TRIP_INTERVAL: 3600000       # 1 hour
+      ROUND_TRIP_STALE_INTERVAL: 7200000 # 2 hours
+      ROUND_TRIP_LAND_TIMEOUT: 180000    # 3 minutes
+      IMAP_POLL_EVERY_MS: 3000           # 3 seconds
+      
+      # Local Mail Server (replace with your values)
+      LOCAL_SMTP_HOST: smtp.your-mail-server.com
+      LOCAL_SMTP_PORT: 587
+      LOCAL_SMTP_SECURE: false
+      LOCAL_SMTP_USER: monitor@your-mail-server.com
+      LOCAL_SMTP_FROM: monitor@your-mail-server.com
+      
+      LOCAL_IMAP_HOST: imap.your-mail-server.com
+      LOCAL_IMAP_PORT: 993
+      LOCAL_IMAP_SECURE: true
+      LOCAL_IMAP_USER: monitor@your-mail-server.com
+      LOCAL_IMAP_MAILBOX: INBOX
+      
+      # External Mail Server (replace with your test account)
+      EXT_SMTP_HOST: smtp.gmail.com
+      EXT_SMTP_PORT: 587
+      EXT_SMTP_SECURE: false
+      EXT_SMTP_USER: test@gmail.com
+      EXT_SMTP_FROM: test@gmail.com
+      
+      EXT_IMAP_HOST: imap.gmail.com
+      EXT_IMAP_PORT: 993
+      EXT_IMAP_SECURE: true
+      EXT_IMAP_USER: test@gmail.com
+      EXT_IMAP_MAILBOX: INBOX
+      
+      # Forwarding Test (optional, use same as external if not testing forwarding)
+      FWD_IMAP_HOST: imap.gmail.com
+      FWD_IMAP_PORT: 993
+      FWD_IMAP_SECURE: true
+      FWD_IMAP_USER: forwarding@gmail.com
+      FWD_IMAP_MAILBOX: INBOX
+      
+      # Test Addresses
+      OUTBOUND_TO: test@gmail.com
+      INBOUND_TO: monitor@your-mail-server.com
+      FWD_TO: forwarding@your-mail-server.com
+      FWD_FINAL_TO: test@gmail.com
+      
+      # Secrets path
+      SECRET_BASE_PATH: /run/secrets
+    
+    secrets:
+      - mailhealth_local_smtp_pass
+      - mailhealth_local_imap_pass
+      - mailhealth_ext_smtp_pass
+      - mailhealth_ext_imap_pass
+      - mailhealth_fwd_imap_pass
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/status"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+secrets:
+  mailhealth_local_smtp_pass:
+    file: ./secrets/local_smtp_pass.txt
+  mailhealth_local_imap_pass:
+    file: ./secrets/local_imap_pass.txt
+  mailhealth_ext_smtp_pass:
+    file: ./secrets/ext_smtp_pass.txt
+  mailhealth_ext_imap_pass:
+    file: ./secrets/ext_imap_pass.txt
+  mailhealth_fwd_imap_pass:
+    file: ./secrets/fwd_imap_pass.txt

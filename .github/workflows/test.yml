@@ -1,0 +1,73 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check code can start
+        run: |
+          timeout 10s npm start || code=$?
+          if [ $code -eq 124 ]; then
+            echo "Service started successfully"
+            exit 0
+          else
+            echo "Service failed to start"
+            exit 1
+          fi
+        env:
+          # Minimal config to allow service to start
+          LOCAL_SMTP_HOST: smtp.example.com
+          LOCAL_SMTP_PORT: 587
+          LOCAL_SMTP_SECURE: false
+          LOCAL_SMTP_USER: test@example.com
+          LOCAL_SMTP_FROM: test@example.com
+          LOCAL_IMAP_HOST: imap.example.com
+          LOCAL_IMAP_PORT: 993
+          LOCAL_IMAP_SECURE: true
+          LOCAL_IMAP_USER: test@example.com
+          EXT_SMTP_HOST: smtp.gmail.com
+          EXT_SMTP_PORT: 587
+          EXT_SMTP_SECURE: false
+          EXT_SMTP_USER: test@gmail.com
+          EXT_SMTP_FROM: test@gmail.com
+          EXT_IMAP_HOST: imap.gmail.com
+          EXT_IMAP_PORT: 993
+          EXT_IMAP_SECURE: true
+          EXT_IMAP_USER: test@gmail.com
+          FWD_IMAP_HOST: imap.gmail.com
+          FWD_IMAP_PORT: 993
+          FWD_IMAP_SECURE: true
+          FWD_IMAP_USER: test@gmail.com
+          OUTBOUND_TO: test@gmail.com
+          INBOUND_TO: test@example.com
+          FWD_TO: fwd@example.com
+          FWD_FINAL_TO: test@gmail.com
+          SECRET_BASE_PATH: /tmp/secrets

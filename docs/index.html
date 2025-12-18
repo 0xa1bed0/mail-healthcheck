@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Open-source email infrastructure monitoring. Detect hung mail servers, validate SMTP/IMAP connectivity, and ensure reliable mail delivery.">
+    <title>Mail Healthcheck - Email Infrastructure Monitoring</title>
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --primary-dark: #059669;
+            --secondary-color: #3b82f6;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-github {
+            background: var(--text-primary);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-github:hover {
+            background: #000;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px;
+            background: linear-gradient(to bottom, white, var(--bg-light));
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-size: 1.05em;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 60px;
+            color: var(--text-primary);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .step {
+            text-align: center;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .step h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .step p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .code-example {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 40px 0;
+        }
+
+        .code-example pre {
+            margin: 0;
+        }
+
+        .command-prompt {
+            color: #10b981;
+        }
+
+        /* Features Grid */
+        .features {
+            padding: 80px 0;
+            background: var(--bg-light);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .feature {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feature h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .feature p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Deployment Options */
+        .deployment {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .deployment-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Use Cases */
+        .use-cases {
+            padding: 80px 0;
+            background: var(--bg-light);
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .use-case {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .use-case h4 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .use-case p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1em;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .section-title {
+                font-size: 2em;
+            }
+
+            .feature-grid,
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">📧 Mail Healthcheck</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#deployment">Deploy</a></li>
+                <li><a href="https://github.com/0xa1bed0/mail-healthcheck">Docs</a></li>
+                <li><a href="https://github.com/0xa1bed0/mail-healthcheck" class="btn-github">⭐ GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Open-Source Email Infrastructure Monitoring</h1>
+            <p class="subtitle">
+                Detect hung mail servers, validate SMTP/IMAP connectivity, and ensure reliable mail delivery. 
+                Self-hosted, production-ready, Docker native.
+            </p>
+            <div class="cta-buttons">
+                <a href="https://github.com/0xa1bed0/mail-healthcheck" class="btn btn-primary">View on GitHub</a>
+                <a href="#deployment" class="btn btn-secondary">Quick Start</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Configure</h3>
+                    <p>Set your mail server credentials and external test accounts via environment variables or Docker secrets.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Deploy</h3>
+                    <p>Run with Docker, Docker Compose, Kubernetes, or plain Node.js. Works anywhere containers run.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Monitor</h3>
+                    <p>Point UptimeRobot, Prometheus, or any HTTP monitor at the /status endpoint. Get instant alerts on failures.</p>
+                </div>
+            </div>
+
+            <div class="code-example">
+                <pre><span class="command-prompt">#</span> Pull from GitHub Container Registry
+docker pull ghcr.io/0xa1bed0/mail-healthcheck:latest
+
+<span class="command-prompt">#</span> Run with your configuration
+docker run -d -p 3000:3000 \
+  -e LOCAL_SMTP_HOST=smtp.your-server.com \
+  -e LOCAL_SMTP_USER=monitor@your-server.com \
+  -e EXT_SMTP_HOST=smtp.gmail.com \
+  ghcr.io/0xa1bed0/mail-healthcheck:latest
+
+<span class="command-prompt">#</span> Check status
+curl http://localhost:3000/status
+<span style="color: #10b981">UP</span></pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <span class="feature-icon">🔍</span>
+                    <h3>Detects Hung Servers</h3>
+                    <p>Catches mail servers that appear operational but can't actually send or receive messages - the #1 silent failure mode that standard monitors miss.</p>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">⚡</span>
+                    <h3>Smart Rate Limiting</h3>
+                    <p>Login checks run every minute (cheap). Full roundtrip tests run hourly (expensive). Won't trigger anti-spam systems or abuse external providers.</p>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🚦</span>
+                    <h3>Stop-on-Failure</h3>
+                    <p>Halts at first error to protect your sender reputation. No bounces, no retries, no cascading failures. Clean failure indication.</p>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📊</span>
+                    <h3>Staleness Detection</h3>
+                    <p>Returns HTTP 418 when cached data is too old. Better to report DOWN than serve stale "UP" status from hours ago.</p>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🐳</span>
+                    <h3>Production Ready</h3>
+                    <p>Multi-platform images (amd64/arm64), Docker secrets support, non-root user, health checks, proper logging, graceful shutdown.</p>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🔓</span>
+                    <h3>Open Source</h3>
+                    <p>MIT licensed. Free for commercial use. Fork it, modify it, run it anywhere. No vendor lock-in or usage limits.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="deployment" id="deployment">
+        <div class="container">
+            <h2 class="section-title">Deploy Anywhere</h2>
+            
+            <div class="deployment-tabs">
+                <div class="tab active" onclick="showTab('docker')">Docker</div>
+                <div class="tab" onclick="showTab('compose')">Docker Compose</div>
+                <div class="tab" onclick="showTab('k8s')">Kubernetes</div>
+            </div>
+
+            <div id="docker" class="tab-content active">
+                <div class="code-example">
+                    <pre>docker run -d \
+  --name mail-healthcheck \
+  -p 3000:3000 \
+  -e LOCAL_SMTP_HOST=smtp.your-server.com \
+  -e LOCAL_SMTP_PORT=587 \
+  -e LOCAL_SMTP_USER=monitor@your-server.com \
+  -e EXT_SMTP_HOST=smtp.gmail.com \
+  ghcr.io/0xa1bed0/mail-healthcheck:latest</pre>
+                </div>
+            </div>
+
+            <div id="compose" class="tab-content">
+                <div class="code-example">
+                    <pre>version: '3.8'
+services:
+  mail-healthcheck:
+    image: ghcr.io/0xa1bed0/mail-healthcheck:latest
+    ports:
+      - "3000:3000"
+    environment:
+      LOCAL_SMTP_HOST: smtp.your-server.com
+      EXT_SMTP_HOST: smtp.gmail.com
+    secrets:
+      - mail_smtp_pass
+    restart: unless-stopped</pre>
+                </div>
+            </div>
+
+            <div id="k8s" class="tab-content">
+                <div class="code-example">
+                    <pre>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail-healthcheck
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: mail-healthcheck
+        image: ghcr.io/0xa1bed0/mail-healthcheck:latest
+        ports:
+        - containerPort: 3000</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="use-cases">
+        <div class="container">
+            <h2 class="section-title">What Can You Monitor?</h2>
+            <div class="use-case-grid">
+                <div class="use-case">
+                    <h4>Postfix/Dovecot Stacks</h4>
+                    <p>Ensure your self-hosted mail server is responsive and can send/receive mail</p>
+                </div>
+                <div class="use-case">
+                    <h4>Mail Forwarding</h4>
+                    <p>Verify forwarding rules are working and mail reaches final destinations</p>
+                </div>
+                <div class="use-case">
+                    <h4>Transactional Email</h4>
+                    <p>Monitor SMTP services used for app notifications, password resets, etc</p>
+                </div>
+                <div class="use-case">
+                    <h4>Multi-Server Setups</h4>
+                    <p>Test mail flow between multiple mail servers and relay configurations</p>
+                </div>
+                <div class="use-case">
+                    <h4>Cloud Mail Services</h4>
+                    <p>Monitor hosted email services (Office 365, Google Workspace, etc)</p>
+                </div>
+                <div class="use-case">
+                    <h4>Development Environments</h4>
+                    <p>Ensure staging/dev mail infrastructure works before production deploy</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Mail Healthcheck</h4>
+                    <p>Open-source email infrastructure monitoring.<br>Built by developers, for developers.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck">GitHub Repository</a></li>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck#readme">Documentation</a></li>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck/issues">Issue Tracker</a></li>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck/pkgs/container/mail-healthcheck">Docker Images</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck/discussions">Discussions</a></li>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck/blob/main/CONTRIBUTING.md">Contributing</a></li>
+                        <li><a href="https://github.com/0xa1bed0">Albedo Technologies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="https://github.com/0xa1bed0/mail-healthcheck/blob/main/LICENSE">MIT License</a></li>
+                        <li><a href="https://github.com/0xa1bed0">About Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Albedo Technologies S.R.L. • Licensed under MIT • Free for commercial use</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
